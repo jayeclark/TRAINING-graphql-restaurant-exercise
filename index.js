@@ -92,7 +92,7 @@ type Mutation{
 // The root provides a resolver function for each API endpoint
 
 export const root = {
-  restaurant: (arg) => {
+  restaurant: ({ id }) => {
     const index = restaurants.findIndex(x => x.id === id);
     if (index < 0) {
       throw new Error('restaurant doesn\'t exist');
