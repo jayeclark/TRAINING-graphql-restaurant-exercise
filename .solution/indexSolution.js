@@ -1,9 +1,9 @@
-var { graphqlHTTP } = require("express-graphql");
-var { buildSchema, assertInputType } = require("graphql");
-var express = require("express");
+import { graphqlHTTP } from "express-graphql";
+import { buildSchema } from "graphql";
+import express from "express";
 
 // Construct a schema, using GraphQL schema language
-var restaurants = [
+const restaurants = [
   {
     id: 1,
     name: "WoodsHill ",
@@ -61,7 +61,8 @@ var restaurants = [
     ],
   },
 ];
-var schema = buildSchema(`
+
+const schema = buildSchema(`
 type Query{
   restaurant(id: Int): restaurant
   restaurants: [restaurant]
@@ -91,32 +92,42 @@ type Mutation{
 `);
 // The root provides a resolver function for each API endpoint
 
-var root = {
-  restaurant: (arg) => restaurants[arg.id],
+const root = {
+
+  restaurant: ({ id }) => {
+    const index = restaurants.findIndex(x => x.id === id);
+    if (index < 0) { throw new Error('restaurant doesn\'t exist'); }
+    return restaurants[index];
+  },
+
   restaurants: () => restaurants,
-  setrestaurant: ({ input }) => {
-    restaurants.push({ name: input.name, email: input.email, age: input.age });
-    return input;
+
+  setrestaurant: ({ input: { name, description } }) => {
+    const id = restaurants[restaurants.length - 1].id + 1;
+    restaurants.push({ id, name, description });
+    return { id, name, description };
   },
+
   deleterestaurant: ({ id }) => {
-    const ok = Boolean(restaurants[id]);
-    let delc = restaurants[id];
-    restaurants = restaurants.filter((item) => item.id !== id);
-    console.log(JSON.stringify(delc));
-    return { ok };
+    const index = restaurants.findIndex(x => x.id === id);
+    restaurants.splice(index, 1);
+    return { ok: Boolean(index >= 0) };
   },
+
   editrestaurant: ({ id, ...restaurant }) => {
-    if (!restaurants[id]) {
+    const index = restaurants.findIndex(x => x.id == id);
+    if (index < 0) {
       throw new Error("restaurant doesn't exist");
     }
-    restaurants[id] = {
-      ...restaurants[id],
+    restaurants[index] = {
+      ...restaurants[index],
       ...restaurant,
     };
-    return restaurants[id];
+    return restaurants[index];
   },
 };
-var app = express();
+
+const app = express();
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -125,7 +136,7 @@ app.use(
     graphiql: true,
   })
 );
-var port = 5500;
+const port = 5500;
 app.listen(5500, () => console.log("Running Graphql on Port:" + port));
 
 export default root;
