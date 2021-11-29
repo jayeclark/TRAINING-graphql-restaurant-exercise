@@ -99,24 +99,25 @@ export const root = {
     return restaurants;
   },
   setrestaurant: ({ input: { name, description } }) => {
-    const id = restaurants.length;
+    const id = restaurants[restaurants.length - 1].id + 1;
     restaurants.push({ name, description, id });
     return { id, name, description };
   },
   deleterestaurant: ({ id }) => {
     const index = restaurants.findIndex(x => x.id === id);
     restaurants.splice(index, 1);
-    return { ok: Boolean(restaurants[id])};
+    return { ok: Boolean(index >= 0)};
   },
   editrestaurant: ({ id, ...restaurant }) => {
-    if (id < 0 || id > restaurants.length - 1) {
+    const index = restaurants.findIndex(x => x.id === id);
+    if (index < 0) {
       throw new Error('restaurant doesn\'t exist');
     }
-    restaurants[id] = {
-      ...restaurants[id],
+    restaurants[index] = {
+      ...restaurants[index],
       ...restaurant,
     }
-    return restaurants[id];
+    return restaurants[index];
   },
 };
 var app = express();
