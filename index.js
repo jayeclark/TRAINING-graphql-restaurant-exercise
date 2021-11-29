@@ -93,7 +93,11 @@ type Mutation{
 
 export const root = {
   restaurant: (arg) => {
-    return restaurants[arg.id];
+    const index = restaurants.findIndex(x => x.id === id);
+    if (index < 0) {
+      throw new Error('restaurant doesn\'t exist');
+    }
+    return restaurants[index];
   },
   restaurants: () => {
     return restaurants;
